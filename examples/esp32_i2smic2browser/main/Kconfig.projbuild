@@ -1,0 +1,183 @@
+menu "Peer Example Configuration"
+
+    choice ESP32_BOARD_MODEL
+        prompt "Board model"
+        default ESP32_EYE
+        help
+            Select the board model to use.
+        config ESP32_EYE
+            bool "ESP32-EYE"
+        config ESP32S3_EYE
+            bool "ESP32S3-EYE"
+        config ESP32_M5STACK_CAMERA_B
+            bool "M5STACK-CAMERA-B"
+        config ESP32S3_XIAO_SENSE
+            bool "ESP32S3-XIAO-SENSE"
+        config GENERIC_ESP32S3_BOARD
+            bool "Generic ESP32-S3 Board"
+    endchoice
+
+    choice AUDIO_INPUT_TYPE
+        prompt "Audio input type" if GENERIC_ESP32S3_BOARD
+        default AUDIO_INPUT_PDM_MIC if GENERIC_ESP32S3_BOARD
+        default AUDIO_INPUT_PDM_MIC if ESP32S3_XIAO_SENSE
+        default AUDIO_INPUT_NONE
+        help
+            Select the microphone interface used by audio.c.
+        config AUDIO_INPUT_NONE
+            bool "No microphone"
+        config AUDIO_INPUT_PDM_MIC
+            bool "PDM microphone"
+        config AUDIO_INPUT_I2S_MSM261
+            bool "I2S microphone (MSM261S4030H0)"
+    endchoice
+
+    config BOARD_HAS_CAMERA
+        bool
+        default y if ESP32_EYE
+        default y if ESP32S3_EYE
+        default y if ESP32_M5STACK_CAMERA_B
+        default y if ESP32S3_XIAO_SENSE
+        default n
+
+    config BOARD_HAS_AUDIO
+        bool
+        default y if AUDIO_INPUT_PDM_MIC
+        default y if AUDIO_INPUT_I2S_MSM261
+        default n
+
+    config AUDIO_PDM_CLK_GPIO
+        int "PDM clock GPIO"
+        depends on AUDIO_INPUT_PDM_MIC
+        default 42
+        help
+            GPIO used for the PDM clock signal.
+
+    config AUDIO_PDM_DATA_GPIO
+        int "PDM data GPIO"
+        depends on AUDIO_INPUT_PDM_MIC
+        default 41
+        help
+            GPIO used for the PDM data signal.
+
+    config AUDIO_I2S_BCLK_GPIO
+        int "I2S BCLK GPIO"
+        depends on AUDIO_INPUT_I2S_MSM261
+        default 9
+        help
+            GPIO used for I2S bit clock. Set this for MSM261S4030H0.
+
+    config AUDIO_I2S_WS_GPIO
+        int "I2S WS/LRCLK GPIO"
+        depends on AUDIO_INPUT_I2S_MSM261
+        default 45
+        help
+            GPIO used for I2S word select / LRCLK.
+
+    config AUDIO_I2S_DATA_GPIO
+        int "I2S data-in GPIO"
+        depends on AUDIO_INPUT_I2S_MSM261
+        default 8
+        help
+            GPIO used for I2S serial data input from the microphone.
+
+    config AUDIO_I2S_CHIPEN_GPIO
+        int "I2S microphone CHIPEN GPIO"
+        depends on AUDIO_INPUT_I2S_MSM261
+        default -1
+        help
+            GPIO used to drive the MSM261S4030H0 CHIPEN pin. Set to -1 if tied high in hardware.
+
+    config AUDIO_INPUT_GAIN
+        int "Audio input software gain"
+        depends on BOARD_HAS_AUDIO
+        range 1 64
+        default 20 if AUDIO_INPUT_I2S_MSM261
+        default 1
+        help
+            Integer gain applied to PCM samples before encoding. Increase this if the microphone level is too low.
+
+    choice AUDIO_CODEC_TYPE
+        prompt "Audio codec"
+        depends on BOARD_HAS_AUDIO
+        default AUDIO_CODEC_G711A
+        help
+            Select the RTP audio codec used by the example.
+        config AUDIO_CODEC_G711A
+            bool "G.711 A-law"
+        config AUDIO_CODEC_OPUS
+            bool "Opus"
+    endchoice
+
+    config DEFAULT_WIFI_SSID
+        string "Default Wi-Fi SSID"
+        default ""
+        help
+            Default Wi-Fi SSID used on boot before runtime overrides are implemented.
+
+    config DEFAULT_WIFI_PASSWORD
+        string "Default Wi-Fi password"
+        default ""
+        help
+            Default Wi-Fi password used on boot before runtime overrides are implemented.
+
+    config DEFAULT_WIFI_MAXIMUM_RETRY
+        int "Default Wi-Fi maximum retry"
+        range 0 100
+        default 6
+        help
+            Number of reconnection attempts before the initial connection is considered failed.
+
+    config SIGNALING_URL
+        string "Signaling URL"
+        default "https://libpeer.com/public/test"
+        help
+            Enter the URL of the Peer library to use.
+    config SIGNALING_TOKEN
+        string "Signaling Token"
+        default ""
+        help
+            Enter the token of the Peer library to use.
+
+    config USE_TURN_SERVER
+        bool "Use TURN server"
+        default n
+        help
+            Enable TURN server settings and add the TURN server to ice_servers.
+
+    config TURN_SERVER_URL
+        string "TURN server URL"
+        depends on USE_TURN_SERVER
+        default ""
+        help
+            Optional TURN server URL such as turn:example.com:3478.
+
+    config TURN_SERVER_USERNAME
+        string "TURN username"
+        depends on USE_TURN_SERVER
+        default ""
+        help
+            Username for the TURN server.
+
+    config TURN_SERVER_CREDENTIAL
+        string "TURN credential"
+        depends on USE_TURN_SERVER
+        default ""
+        help
+            Credential or password for the TURN server.
+
+    config ICE_TRIAL_TIMEOUT
+        int "ICE trial timeout (ms)"
+        range 100 60000
+        default 2000
+        help
+            Per-candidate-pair trial timeout in milliseconds for direct/STUN candidates.
+
+    config ICE_TRIAL_TIMEOUT_TURN
+        int "ICE trial timeout for TURN pairs (ms)"
+        depends on USE_TURN_SERVER
+        range 100 60000
+        default 6000
+        help
+            Per-candidate-pair trial timeout in milliseconds when the active pair includes a relay candidate.
+endmenu

@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebRTC WebSocket Signaling</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: #fffaf2;
+      --ink: #1f2a36;
+      --accent: #0e7a6d;
+      --line: #d8cdbd;
+      --error: #b42318;
+      --muted: #52606d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Sans", sans-serif;
+      background:
+        radial-gradient(circle at top left, #fff3d6, transparent 35%),
+        linear-gradient(180deg, #f8f3eb 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.05;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: #4a5561;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 12px 32px rgba(31, 42, 54, 0.08);
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 210px;
+      resize: vertical;
+      font: 13px/1.5 Consolas, "Courier New", monospace;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 8px 0 0;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      background: var(--accent);
+    }
+
+    button.secondary {
+      background: var(--muted);
+    }
+
+    .status {
+      min-height: 24px;
+      font-weight: 700;
+    }
+
+    .status.error {
+      color: var(--error);
+    }
+
+    .status.ok {
+      color: var(--accent);
+    }
+
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .state-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      padding: 12px;
+    }
+
+    .state-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .state-card span {
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .meter-wrap {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      padding: 12px;
+    }
+
+    .meter-bar {
+      width: 100%;
+      height: 16px;
+      border-radius: 999px;
+      background: #e7ddd0;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .meter-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #0e7a6d 0%, #f2a541 100%);
+      transition: width 0.08s linear;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>WebRTC WebSocket Signaling</h1>
+    <p>ESP32 と同じ room に WebSocket で接続し、Offer 受信から Answer 返却まで自動で行います。</p>
+
+    <section class="panel">
+      <div class="grid">
+        <div class="two-col">
+          <div>
+            <label for="ws-url">WebSocket URL</label>
+            <input id="ws-url" type="text" value="wss://">
+          </div>
+          <div>
+            <label for="ws-state">WebSocket State</label>
+            <input id="ws-state" type="text" value="closed" readonly>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="connect-ws" type="button">Connect</button>
+          <button id="request-offer" type="button">Request Offer</button>
+          <button id="disconnect-ws" class="secondary" type="button">Disconnect</button>
+          <button id="close-peer" class="secondary" type="button">Close Peer</button>
+          <button id="enable-audio" class="secondary" type="button">Enable Audio</button>
+        </div>
+
+        <div id="status" class="status"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="grid">
+        <div class="state-grid">
+          <div class="state-card">
+            <strong>Signaling State</strong>
+            <span id="signaling-state">idle</span>
+          </div>
+          <div class="state-card">
+            <strong>ICE State</strong>
+            <span id="ice-state">new</span>
+          </div>
+          <div class="state-card">
+            <strong>Connection State</strong>
+            <span id="connection-state">new</span>
+          </div>
+          <div class="state-card">
+            <strong>Datachannel State</strong>
+            <span id="datachannel-state">waiting</span>
+          </div>
+        </div>
+
+        <div>
+          <label for="message">Datachannel Message</label>
+          <textarea id="message" spellcheck="false" placeholder="hello from browser"></textarea>
+        </div>
+
+        <div class="actions">
+          <button id="send-message" type="button">Send Message</button>
+        </div>
+
+        <div>
+          <label for="remote-audio">Remote Audio</label>
+          <audio id="remote-audio" controls autoplay playsinline></audio>
+        </div>
+
+        <div class="meter-wrap">
+          <label for="audio-level-text">Remote Audio Level</label>
+          <div id="audio-level-text">0</div>
+          <div class="meter-bar">
+            <div id="audio-level-fill" class="meter-fill"></div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label for="offer-raw">Offer SDP Raw</label>
+            <textarea id="offer-raw" spellcheck="false" readonly></textarea>
+          </div>
+          <div>
+            <label for="answer-raw">Answer SDP Raw</label>
+            <textarea id="answer-raw" spellcheck="false" readonly></textarea>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label for="offer-b64">Offer SDP Base64</label>
+            <textarea id="offer-b64" spellcheck="false" readonly></textarea>
+          </div>
+          <div>
+            <label for="answer-b64">Answer SDP Base64</label>
+            <textarea id="answer-b64" spellcheck="false" readonly></textarea>
+          </div>
+        </div>
+
+        <div>
+          <label for="events">Event Log</label>
+          <textarea id="events" spellcheck="false" readonly></textarea>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const wsUrlEl = document.getElementById("ws-url");
+    const wsStateEl = document.getElementById("ws-state");
+    const statusEl = document.getElementById("status");
+    const signalingStateEl = document.getElementById("signaling-state");
+    const iceStateEl = document.getElementById("ice-state");
+    const connectionStateEl = document.getElementById("connection-state");
+    const datachannelStateEl = document.getElementById("datachannel-state");
+    const eventsEl = document.getElementById("events");
+    const messageEl = document.getElementById("message");
+    const remoteAudioEl = document.getElementById("remote-audio");
+    const audioLevelTextEl = document.getElementById("audio-level-text");
+    const audioLevelFillEl = document.getElementById("audio-level-fill");
+    const offerRawEl = document.getElementById("offer-raw");
+    const answerRawEl = document.getElementById("answer-raw");
+    const offerB64El = document.getElementById("offer-b64");
+    const answerB64El = document.getElementById("answer-b64");
+    const connectButton = document.getElementById("connect-ws");
+    const requestOfferButton = document.getElementById("request-offer");
+    const disconnectButton = document.getElementById("disconnect-ws");
+    const closePeerButton = document.getElementById("close-peer");
+    const enableAudioButton = document.getElementById("enable-audio");
+    const sendMessageButton = document.getElementById("send-message");
+
+    let ws = null;
+    let currentPc = null;
+    let currentDataChannel = null;
+    let didAutoSendDataChannelProbe = false;
+    let remoteAudioStream = new MediaStream();
+    let audioContext = null;
+    let audioAnalyser = null;
+    let audioSourceNode = null;
+    let audioLevelTimer = null;
+    const DEFAULT_STUN_URLS = [
+      "stun:stun.l.google.com:19302",
+    ];
+    const DEFAULT_TURN_URLS = [
+    ];
+    const DEFAULT_ICE_USERNAME = "user";
+    const DEFAULT_ICE_PASSWORD = "password";
+
+    function appendHiddenKeyToWebSocketUrl() {
+      const params = new URL(window.location.href).searchParams;
+      const key = params.get("key");
+
+      if (!key) {
+        return;
+      }
+
+      if (/[?&]key=/.test(wsUrlEl.value)) {
+        return;
+      }
+
+      const separator = wsUrlEl.value.includes("?") ? "&" : "?";
+      wsUrlEl.value = `${wsUrlEl.value}${separator}key=${encodeURIComponent(key)}`;
+    }
+
+    appendHiddenKeyToWebSocketUrl();
+
+    function parseIceUrlList(value, fallback) {
+      if (!value) {
+        return fallback.slice();
+      }
+
+      const urls = value
+        .split(",")
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0);
+
+      return urls.length > 0 ? urls : fallback.slice();
+    }
+
+    function getIceServerCredentials() {
+      const params = new URL(window.location.href).searchParams;
+      return {
+        username: params.get("iceuser") || DEFAULT_ICE_USERNAME,
+        credential: params.get("icepassword") || DEFAULT_ICE_PASSWORD,
+      };
+    }
+
+    const ICE_SERVERS = (() => {
+      const params = new URL(window.location.href).searchParams;
+      const credentials = getIceServerCredentials();
+      const stunUrls = parseIceUrlList(params.get("stunurls"), DEFAULT_STUN_URLS);
+      const turnUrls = parseIceUrlList(params.get("turnurls"), DEFAULT_TURN_URLS);
+      const servers = [];
+
+      if (stunUrls.length > 0) {
+        servers.push({ urls: stunUrls });
+      }
+      if (turnUrls.length > 0) {
+        servers.push({
+          urls: turnUrls,
+          username: credentials.username,
+          credential: credentials.credential,
+        });
+      }
+
+      return servers;
+    })();
+
+    function setStatus(message, kind = "") {
+      statusEl.textContent = message;
+      statusEl.className = `status ${kind}`.trim();
+    }
+
+    function appendEvent(message) {
+      const prefix = new Date().toLocaleTimeString("ja-JP", { hour12: false });
+      eventsEl.value += `[${prefix}] ${message}\n`;
+      eventsEl.scrollTop = eventsEl.scrollHeight;
+    }
+
+    function updateWsState() {
+      const states = ["connecting", "open", "closing", "closed"];
+      wsStateEl.value = ws ? states[ws.readyState] || String(ws.readyState) : "closed";
+      requestOfferButton.disabled = !(ws && ws.readyState === WebSocket.OPEN);
+    }
+
+    function setPeerStates(pc) {
+      signalingStateEl.textContent = pc?.signalingState || "idle";
+      iceStateEl.textContent = pc?.iceConnectionState || "new";
+      connectionStateEl.textContent = pc?.connectionState || "new";
+      datachannelStateEl.textContent = currentDataChannel?.readyState || "waiting";
+    }
+
+    function decodeBase64(base64) {
+      return atob(base64.replace(/\s+/g, ""));
+    }
+
+    function encodeBase64(text) {
+      return btoa(text);
+    }
+
+    function decodeBase64ToText(base64) {
+      return atob(base64.replace(/\s+/g, ""));
+    }
+
+    function sendSignalingMessage(payload) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        appendEvent(`skip websocket send: ${JSON.stringify(payload)}`);
+        return;
+      }
+
+      ws.send(JSON.stringify(payload));
+    }
+
+    function normalizeWebSocketUrl(url) {
+      const trimmed = url.trim();
+      if (!trimmed) {
+        return "";
+      }
+      return trimmed;
+    }
+
+    function sanitizeAnswerSdp(sdp) {
+      return sdp
+        .split(/\r\n|\n/)
+        .filter((line) => {
+          if (!line) {
+            return false;
+          }
+          if (!line.startsWith("a=candidate:")) {
+            return true;
+          }
+          return !line.includes(" raddr 0.0.0.0 rport 0");
+        })
+        .join("\r\n") + "\r\n";
+    }
+
+    function waitForIceGatheringComplete(pc) {
+      return new Promise((resolve) => {
+        if (pc.iceGatheringState === "complete") {
+          resolve();
+          return;
+        }
+
+        function onStateChange() {
+          if (pc.iceGatheringState === "complete") {
+            pc.removeEventListener("icegatheringstatechange", onStateChange);
+            resolve();
+          }
+        }
+
+        pc.addEventListener("icegatheringstatechange", onStateChange);
+      });
+    }
+
+    function stopAudioMeter() {
+      if (audioLevelTimer) {
+        clearInterval(audioLevelTimer);
+        audioLevelTimer = null;
+      }
+      if (audioSourceNode) {
+        audioSourceNode.disconnect();
+        audioSourceNode = null;
+      }
+      if (audioAnalyser) {
+        audioAnalyser.disconnect();
+        audioAnalyser = null;
+      }
+      audioLevelTextEl.textContent = "0";
+      audioLevelFillEl.style.width = "0%";
+    }
+
+    async function resumeAudioPlayback() {
+      try {
+        if (audioContext && audioContext.state === "suspended") {
+          await audioContext.resume();
+          appendEvent("audio context resumed");
+        }
+        if (remoteAudioEl.srcObject) {
+          await remoteAudioEl.play();
+          appendEvent("remote audio playback started");
+        }
+      } catch (error) {
+        appendEvent(`remote audio playback blocked: ${error.message || error}`);
+      }
+    }
+
+    function startAudioMeter(stream) {
+      stopAudioMeter();
+
+      if (!audioContext) {
+        audioContext = new AudioContext();
+      }
+
+      audioSourceNode = audioContext.createMediaStreamSource(stream);
+      audioAnalyser = audioContext.createAnalyser();
+      audioAnalyser.fftSize = 2048;
+      audioSourceNode.connect(audioAnalyser);
+
+      const data = new Uint8Array(audioAnalyser.fftSize);
+      audioLevelTimer = setInterval(() => {
+        audioAnalyser.getByteTimeDomainData(data);
+        let peak = 0;
+        for (let i = 0; i < data.length; i++) {
+          const centered = Math.abs(data[i] - 128);
+          if (centered > peak) {
+            peak = centered;
+          }
+        }
+        const percent = Math.min(100, Math.round((peak / 128) * 100));
+        audioLevelTextEl.textContent = `${peak} (${percent}%)`;
+        audioLevelFillEl.style.width = `${percent}%`;
+      }, 100);
+    }
+
+    function bindDataChannel(channel) {
+      currentDataChannel = channel;
+      didAutoSendDataChannelProbe = false;
+      setPeerStates(currentPc);
+      appendEvent(`datachannel created: ${channel.label || "(no label)"}`);
+
+      channel.onopen = () => {
+        setPeerStates(currentPc);
+        appendEvent("datachannel open");
+        if (!didAutoSendDataChannelProbe) {
+          const probe = "auto hello from browser";
+          channel.send(probe);
+          didAutoSendDataChannelProbe = true;
+          appendEvent(`message to ESP32: ${probe}`);
+        }
+        setStatus("Datachannel opened.", "ok");
+      };
+
+      channel.onclose = () => {
+        setPeerStates(currentPc);
+        appendEvent("datachannel close");
+      };
+
+      channel.onerror = (event) => {
+        appendEvent(`datachannel error: ${event?.message || "unknown"}`);
+      };
+
+      channel.onmessage = (event) => {
+        appendEvent(`message from ESP32: ${event.data}`);
+      };
+    }
+
+    function closeCurrentPeer() {
+      stopAudioMeter();
+      remoteAudioEl.pause();
+      remoteAudioEl.srcObject = null;
+      remoteAudioStream = new MediaStream();
+
+      if (currentDataChannel) {
+        currentDataChannel.close();
+        currentDataChannel = null;
+      }
+
+      if (currentPc) {
+        currentPc.close();
+        currentPc = null;
+      }
+
+      offerRawEl.value = "";
+      answerRawEl.value = "";
+      offerB64El.value = "";
+      answerB64El.value = "";
+      setPeerStates(null);
+    }
+
+    function closeWebSocket() {
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+      updateWsState();
+    }
+
+    function requestOffer() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        setStatus("WebSocket is not connected.", "error");
+        return;
+      }
+
+      ws.send(JSON.stringify({ request: "offer" }));
+      appendEvent("offer requested via websocket");
+      setStatus("Offer request sent.", "ok");
+    }
+
+    async function handleOfferMessage(offerBase64) {
+      closeCurrentPeer();
+      eventsEl.value = "";
+
+      const pc = new RTCPeerConnection({
+        iceServers: ICE_SERVERS,
+      });
+      currentPc = pc;
+      setPeerStates(pc);
+
+      pc.oniceconnectionstatechange = () => {
+        setPeerStates(pc);
+        appendEvent(`iceConnectionState -> ${pc.iceConnectionState}`);
+      };
+
+      pc.onconnectionstatechange = () => {
+        setPeerStates(pc);
+        appendEvent(`connectionState -> ${pc.connectionState}`);
+      };
+
+      pc.onsignalingstatechange = () => {
+        setPeerStates(pc);
+        appendEvent(`signalingState -> ${pc.signalingState}`);
+      };
+
+      pc.onicecandidateerror = (event) => {
+        appendEvent(`icecandidateerror -> ${event.errorCode || "unknown"} ${event.errorText || ""}`.trim());
+      };
+
+      pc.onicecandidate = (event) => {
+        if (!event.candidate || !event.candidate.candidate) {
+          appendEvent("ice candidate gathering complete");
+          return;
+        }
+
+        const candidateText = event.candidate.candidate;
+        const candidateBase64 = encodeBase64(candidateText);
+        appendEvent(`local ice candidate: ${candidateText}`);
+        sendSignalingMessage({
+          type: "candidate",
+          candidate_b64: candidateBase64,
+          sdpMid: event.candidate.sdpMid,
+          sdpMLineIndex: event.candidate.sdpMLineIndex,
+        });
+      };
+
+      pc.ondatachannel = (event) => {
+        bindDataChannel(event.channel);
+      };
+
+      pc.ontrack = async (event) => {
+        appendEvent(`remote track received: kind=${event.track.kind}`);
+        if (event.track.kind !== "audio") {
+          return;
+        }
+
+        if (event.streams && event.streams[0]) {
+          remoteAudioEl.srcObject = event.streams[0];
+          startAudioMeter(event.streams[0]);
+        } else {
+          remoteAudioStream.addTrack(event.track);
+          remoteAudioEl.srcObject = remoteAudioStream;
+          startAudioMeter(remoteAudioStream);
+        }
+
+        await resumeAudioPlayback();
+      };
+
+      const offerSdp = decodeBase64(offerBase64);
+      offerB64El.value = offerBase64;
+      offerRawEl.value = offerSdp;
+
+      await pc.setRemoteDescription({
+        type: "offer",
+        sdp: offerSdp,
+      });
+      appendEvent("remote description set");
+
+      const localChannel = pc.createDataChannel("browser-control");
+      bindDataChannel(localChannel);
+      appendEvent("local datachannel created");
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      const sanitizedAnswerSdp = sanitizeAnswerSdp(pc.localDescription?.sdp || "");
+      const answerBase64 = encodeBase64(sanitizedAnswerSdp);
+      answerRawEl.value = sanitizedAnswerSdp;
+      answerB64El.value = answerBase64;
+
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        throw new Error("WebSocket is not open");
+      }
+
+      sendSignalingMessage({ type: "answer", answer: answerBase64 });
+      appendEvent("answer sent via websocket");
+      appendEvent("local description set; ICE gathering continues in background");
+      waitForIceGatheringComplete(pc).then(() => {
+        appendEvent("ice gathering complete");
+      });
+      setStatus("Offer を受信して Answer を返しました。", "ok");
+    }
+
+    function handleWebSocketMessage(event) {
+      let payload;
+      try {
+        payload = JSON.parse(event.data);
+      } catch (error) {
+        appendEvent(`invalid websocket json: ${error.message || error}`);
+        return;
+      }
+
+      if (typeof payload.log === "string" && payload.log.length > 0) {
+        appendEvent(`remote log: ${payload.log}`);
+        return;
+      }
+
+      if (typeof payload.candidate_b64 === "string" && payload.candidate_b64.length > 0) {
+        const remoteCandidate = decodeBase64ToText(payload.candidate_b64);
+        appendEvent(`remote ice candidate: ${remoteCandidate}`);
+        if (currentPc) {
+          currentPc.addIceCandidate({
+            candidate: remoteCandidate,
+            sdpMid: payload.sdpMid || null,
+            sdpMLineIndex: typeof payload.sdpMLineIndex === "number" ? payload.sdpMLineIndex : null,
+          }).catch((error) => {
+            appendEvent(`failed to add remote candidate: ${error.message || error}`);
+          });
+        }
+        return;
+      }
+
+      if (typeof payload.candidate === "string" && payload.candidate.length > 0) {
+        appendEvent(`remote ice candidate: ${payload.candidate}`);
+        if (currentPc) {
+          currentPc.addIceCandidate({
+            candidate: payload.candidate,
+            sdpMid: payload.sdpMid || null,
+            sdpMLineIndex: typeof payload.sdpMLineIndex === "number" ? payload.sdpMLineIndex : null,
+          }).catch((error) => {
+            appendEvent(`failed to add remote candidate: ${error.message || error}`);
+          });
+        }
+        return;
+      }
+
+      if (typeof payload.offer !== "string" || payload.offer.length === 0) {
+        appendEvent("websocket message does not contain offer");
+        return;
+      }
+
+      appendEvent("offer received via websocket");
+      setStatus("Offer を受信しました。Answer を生成します。", "");
+      handleOfferMessage(payload.offer).catch((error) => {
+        console.error(error);
+        appendEvent(`error: ${error.message || error}`);
+        setStatus(`失敗: ${error.message || error}`, "error");
+        closeCurrentPeer();
+      });
+    }
+
+    function connectWebSocket() {
+      closeWebSocket();
+      closeCurrentPeer();
+      eventsEl.value = "";
+
+      const url = normalizeWebSocketUrl(wsUrlEl.value);
+      if (!url) {
+        setStatus("WebSocket URL を入力してください。", "error");
+        return;
+      }
+
+      wsUrlEl.value = url;
+
+      ws = new WebSocket(url);
+      updateWsState();
+      setStatus("WebSocket 接続中...", "");
+      appendEvent(`websocket connecting -> ${url}`);
+
+      ws.onopen = () => {
+        updateWsState();
+        setStatus("WebSocket connected.", "ok");
+        appendEvent("websocket open");
+        sendSignalingMessage({ type: "log", log: "browser connected" });
+      };
+
+      ws.onclose = () => {
+        updateWsState();
+        appendEvent("websocket close");
+        setStatus("WebSocket closed.", "");
+      };
+
+      ws.onerror = () => {
+        updateWsState();
+        appendEvent("websocket error");
+        setStatus("WebSocket error.", "error");
+      };
+
+      ws.onmessage = handleWebSocketMessage;
+    }
+
+    connectButton.addEventListener("click", connectWebSocket);
+    requestOfferButton.addEventListener("click", requestOffer);
+    disconnectButton.addEventListener("click", () => {
+      closeWebSocket();
+      setStatus("WebSocket closed.", "");
+    });
+    closePeerButton.addEventListener("click", () => {
+      closeCurrentPeer();
+      appendEvent("peer closed manually");
+      setStatus("Peer closed.", "ok");
+    });
+    sendMessageButton.addEventListener("click", () => {
+      if (!currentDataChannel || currentDataChannel.readyState !== "open") {
+        setStatus("Datachannel が open ではありません。", "error");
+        return;
+      }
+
+      currentDataChannel.send(messageEl.value);
+      appendEvent(`message to ESP32: ${messageEl.value}`);
+      setStatus("Datachannel message sent.", "ok");
+    });
+
+    enableAudioButton.addEventListener("click", () => {
+      resumeAudioPlayback();
+    });
+
+    document.addEventListener("pointerdown", () => {
+      resumeAudioPlayback();
+    }, { passive: true });
+
+  </script>
+</body>
+</html>
