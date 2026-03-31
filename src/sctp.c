@@ -198,6 +198,45 @@ void sctp_parse_data_channel_open(Sctp* sctp, uint16_t sid, char* data, size_t l
   }
 }
 
+static void sctp_send_control_chunk(Sctp* sctp, uint8_t type, const uint8_t* payload, size_t payload_len) {
+  SctpPacket* out_packet = (SctpPacket*)sctp->buf;
+  SctpChunkCommon* common = (SctpChunkCommon*)out_packet->chunks;
+  size_t chunk_len = sizeof(SctpChunkCommon) + payload_len;
+  size_t packet_len = sizeof(SctpHeader) + chunk_len;
+
+  if (packet_len > sizeof(sctp->buf)) {
+    LOGE("SCTP control chunk too large: %zu", packet_len);
+    return;
+  }
+
+  memset(sctp->buf, 0, sizeof(sctp->buf));
+  common->type = type;
+  common->flags = 0x00;
+  common->length = htons(chunk_len);
+  if (payload_len > 0 && payload != NULL) {
+    memcpy((uint8_t*)common + sizeof(SctpChunkCommon), payload, payload_len);
+  }
+
+  out_packet->header.source_port = htons(sctp->local_port);
+  out_packet->header.destination_port = htons(sctp->remote_port);
+  out_packet->header.verification_tag = sctp->verification_tag;
+  out_packet->header.checksum = 0x00;
+  out_packet->header.checksum = sctp_get_checksum(sctp, sctp->buf, (packet_len + 3) & ~3);
+  dtls_srtp_write(sctp->dtls_srtp, sctp->buf, (packet_len + 3) & ~3);
+}
+
+static void sctp_close_association(Sctp* sctp) {
+  if (sctp == NULL) {
+    return;
+  }
+  if (sctp->connected) {
+    sctp->connected = 0;
+    if (sctp->onclose) {
+      sctp->onclose(sctp->userdata);
+    }
+  }
+}
+
 void sctp_handle_sctp_packet(Sctp* sctp, char* buf, size_t len) {
   if (len <= 29)
     return;
@@ -360,6 +399,49 @@ void sctp_incoming_data(Sctp* sctp, char* buf, size_t len) {
            ntohs(sack->number_of_dup_tsns));
         }
 #endif
+        break;
+      case SCTP_HEARTBEAT: {
+        size_t chunk_len = ntohs(chunk_common->length);
+        size_t payload_len = 0;
+
+        if (chunk_len >= sizeof(SctpChunkCommon)) {
+          payload_len = chunk_len - sizeof(SctpChunkCommon);
+        }
+
+        sctp->heartbeat_rx_log_count++;
+        if (sctp->heartbeat_rx_log_count <= 3 || (sctp->heartbeat_rx_log_count % 100u) == 0u) {
+          LOGI("SCTP_HEARTBEAT count=%" PRIu32, sctp->heartbeat_rx_log_count);
+        } else {
+          LOGD("SCTP_HEARTBEAT");
+        }
+        sctp_send_control_chunk(sctp, SCTP_HEARTBEAT_ACK, (const uint8_t*)buf + pos + sizeof(SctpChunkCommon), payload_len);
+        pos = len;  // Heartbeat is a stand-alone control chunk here.
+      } break;
+      case SCTP_HEARTBEAT_ACK:
+        sctp->heartbeat_ack_log_count++;
+        if (sctp->heartbeat_ack_log_count <= 3 || (sctp->heartbeat_ack_log_count % 100u) == 0u) {
+          LOGI("SCTP_HEARTBEAT_ACK count=%" PRIu32, sctp->heartbeat_ack_log_count);
+        } else {
+          LOGD("SCTP_HEARTBEAT_ACK");
+        }
+        break;
+      case SCTP_SHUTDOWN:
+        sctp->shutdown_log_count++;
+        LOGI("SCTP_SHUTDOWN count=%" PRIu32, sctp->shutdown_log_count);
+        sctp_send_control_chunk(sctp, SCTP_SHUTDOWN_ACK, NULL, 0);
+        sctp_close_association(sctp);
+        pos = len;
+        break;
+      case SCTP_SHUTDOWN_ACK:
+        LOGI("SCTP_SHUTDOWN_ACK");
+        sctp_send_control_chunk(sctp, SCTP_SHUTDOWN_COMPLETE, NULL, 0);
+        sctp_close_association(sctp);
+        pos = len;
+        break;
+      case SCTP_SHUTDOWN_COMPLETE:
+        LOGI("SCTP_SHUTDOWN_COMPLETE");
+        sctp_close_association(sctp);
+        pos = len;
         break;
       case SCTP_COOKIE_ECHO: {
         LOGD("SCTP_COOKIE_ECHO");

@@ -2,7 +2,7 @@ project(tests)
 
 file(GLOB SRCS "*.c")
 
-include_directories(${PROJECT_SOURCE_DIR}/../src)
+include_directories(${PROJECT_SOURCE_DIR}/../include)
 
 foreach(sourcefile ${SRCS})
   string(REPLACE ".c" "" appname ${sourcefile})
@@ -12,4 +12,3 @@ foreach(sourcefile ${SRCS})
 endforeach(sourcefile ${TEST_SRCS})
 
 target_link_libraries(test_peer_connection cjson)
-

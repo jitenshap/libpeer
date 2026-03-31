@@ -13,7 +13,9 @@ typedef struct StunAttribute StunAttribute;
 
 typedef struct StunMessage StunMessage;
 
-#define STUN_ATTR_BUF_SIZE 256
+#ifndef STUN_ATTR_BUF_SIZE
+#define STUN_ATTR_BUF_SIZE (CONFIG_MTU + 256)
+#endif
 #define MAGIC_COOKIE 0x2112A442
 #define STUN_FINGERPRINT_XOR 0x5354554e
 
@@ -38,7 +40,10 @@ typedef enum StunAttrType {
   STUN_ATTR_TYPE_MAPPED_ADDRESS = 0x0001,
   STUN_ATTR_TYPE_USERNAME = 0x0006,
   STUN_ATTR_TYPE_MESSAGE_INTEGRITY = 0x0008,
+  STUN_ATTR_TYPE_ERROR_CODE = 0x0009,
   STUN_ATTR_TYPE_LIFETIME = 0x000d,
+  STUN_ATTR_TYPE_XOR_PEER_ADDRESS = 0x0012,
+  STUN_ATTR_TYPE_DATA = 0x0013,
   STUN_ATTR_TYPE_REALM = 0x0014,
   STUN_ATTR_TYPE_NONCE = 0x0015,
   STUN_ATTR_TYPE_XOR_RELAYED_ADDRESS = 0x0016,
@@ -86,6 +91,8 @@ struct StunMessage {
   StunClass stunclass;
   StunMethod stunmethod;
   uint32_t fingerprint;
+  uint32_t error_code;
+  uint32_t lifetime;
   char message_integrity[20];
   char username[128];
   char realm[64];

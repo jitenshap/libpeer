@@ -102,11 +102,6 @@ int ice_candidate_from_description(IceCandidate* candidate, char* description, c
     return -1;
   }
 
-  if (strncmp(candidate->transport, "UDP", 3) != 0 && strncmp(candidate->transport, "udp", 3) != 0) {
-    LOGE("Only UDP transport is supported");
-    return -1;
-  }
-
   if (strncmp(type, "host", 4) == 0) {
     candidate->type = ICE_CANDIDATE_TYPE_HOST;
   } else if (strncmp(type, "srflx", 5) == 0) {

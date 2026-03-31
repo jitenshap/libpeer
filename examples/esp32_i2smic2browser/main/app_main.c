@@ -18,7 +18,7 @@
 #include "freertos/event_groups.h"
 #include "nvs.h"
 #include "nvs_flash.h"
-
+#include "peer_connection.h"
 #include "base64.h"
 #include "peer.h"
 
@@ -1237,10 +1237,6 @@ void app_main(void) {
   xSemaphore = xSemaphoreCreateMutex();
 
   peer_init();
-
-#if defined(CONFIG_BOARD_HAS_CAMERA)
-  camera_init();
-#endif
 
 #if defined(CONFIG_BOARD_HAS_AUDIO)
   audio_init();

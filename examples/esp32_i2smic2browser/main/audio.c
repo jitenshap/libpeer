@@ -4,7 +4,7 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
+#include "peer_connection.h"
 #include "esp_audio_enc.h"
 #include "esp_audio_enc_default.h"
 #include "esp_audio_enc_reg.h"

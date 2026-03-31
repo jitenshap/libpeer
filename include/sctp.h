@@ -158,6 +158,9 @@ typedef struct Sctp {
   DtlsSrtp* dtls_srtp;
   int stream_count;
   SctpStreamEntry stream_table[SCTP_MAX_STREAMS];
+  uint32_t heartbeat_rx_log_count;
+  uint32_t heartbeat_ack_log_count;
+  uint32_t shutdown_log_count;
 
   /* datachannel */
   void (*onmessage)(char* msg, size_t len, void* userdata, uint16_t sid);

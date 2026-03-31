@@ -18,7 +18,7 @@ include_directories(
   ${CMAKE_CURRENT_LIST_DIR}/../../third_party/libsrtp/include/
   ${CMAKE_CURRENT_LIST_DIR}/../../third_party/libsrtp/crypto/include/
   ${CMAKE_CURRENT_LIST_DIR}/../../third_party/cJSON/
-  ${CMAKE_CURRENT_LIST_DIR}/../../src/
+  ${CMAKE_CURRENT_LIST_DIR}/../../include/
   ${HTTP_INCLUDE_PUBLIC_DIRS}
   ${MQTT_INCLUDE_PUBLIC_DIRS}
 )

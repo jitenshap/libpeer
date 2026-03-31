@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "stun.h"
@@ -47,13 +48,20 @@ uint32_t CRC32_TABLE[256] = {
     0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
 
 void stun_msg_create(StunMessage* msg, uint16_t type) {
+  static int seeded = 0;
   StunHeader* header = (StunHeader*)msg->buf;
+
+  if (!seeded) {
+    srand((unsigned int)time(NULL));
+    seeded = 1;
+  }
+
   header->type = htons(type);
   header->length = 0;
   header->magic_cookie = htonl(MAGIC_COOKIE);
-  header->transaction_id[0] = htonl(CRC32_TABLE[1]);
-  header->transaction_id[1] = htonl(CRC32_TABLE[2]);
-  header->transaction_id[2] = htonl(CRC32_TABLE[3]);
+  header->transaction_id[0] = htonl((uint32_t)rand());
+  header->transaction_id[1] = htonl((uint32_t)rand());
+  header->transaction_id[2] = htonl((uint32_t)rand());
   msg->size = sizeof(StunHeader);
 }
 
@@ -125,6 +133,7 @@ void stun_get_mapped_address(char* value, uint8_t* mask, Address* addr) {
 
 void stun_parse_msg_buf(StunMessage* msg) {
   StunHeader* header = (StunHeader*)msg->buf;
+  uint16_t raw_type = ntohs(header->type);
 
   int length = ntohs(header->length) + sizeof(StunHeader);
 
@@ -132,23 +141,25 @@ void stun_parse_msg_buf(StunMessage* msg) {
 
   uint8_t mask[16];
 
-  msg->stunclass = ntohs(header->type);
-  if ((msg->stunclass & STUN_CLASS_ERROR) == STUN_CLASS_ERROR) {
-    msg->stunclass = STUN_CLASS_ERROR;
-  } else if ((msg->stunclass & STUN_CLASS_INDICATION) == STUN_CLASS_INDICATION) {
-    msg->stunclass = STUN_CLASS_INDICATION;
-  } else if ((msg->stunclass & STUN_CLASS_RESPONSE) == STUN_CLASS_RESPONSE) {
-    msg->stunclass = STUN_CLASS_RESPONSE;
-  } else if ((msg->stunclass & STUN_CLASS_REQUEST) == STUN_CLASS_REQUEST) {
-    msg->stunclass = STUN_CLASS_REQUEST;
-  }
+  msg->error_code = 0;
+  msg->lifetime = 0;
 
-  msg->stunmethod = ntohs(header->type) & 0x0FFF;
-  if ((msg->stunmethod & STUN_METHOD_ALLOCATE) == STUN_METHOD_ALLOCATE) {
-    msg->stunmethod = STUN_METHOD_ALLOCATE;
-  } else if ((msg->stunmethod & STUN_METHOD_BINDING) == STUN_METHOD_BINDING) {
-    msg->stunmethod = STUN_METHOD_BINDING;
+  switch (raw_type & 0x0110u) {
+    case STUN_CLASS_ERROR:
+      msg->stunclass = STUN_CLASS_ERROR;
+      break;
+    case STUN_CLASS_INDICATION:
+      msg->stunclass = STUN_CLASS_INDICATION;
+      break;
+    case STUN_CLASS_RESPONSE:
+      msg->stunclass = STUN_CLASS_RESPONSE;
+      break;
+    case STUN_CLASS_REQUEST:
+    default:
+      msg->stunclass = STUN_CLASS_REQUEST;
+      break;
   }
+  msg->stunmethod = (StunMethod)(raw_type & ~0x0110u);
 
   while (pos < length) {
     StunAttribute* attr = (StunAttribute*)(msg->buf + pos);
@@ -175,7 +186,21 @@ void stun_parse_msg_buf(StunMessage* msg) {
         }
 
         break;
+      case STUN_ATTR_TYPE_ERROR_CODE:
+        if (ntohs(attr->length) >= 4) {
+          msg->error_code = (uint32_t)((attr->value[2] & 0x07) * 100 + (uint8_t)attr->value[3]);
+        }
+        break;
       case STUN_ATTR_TYPE_LIFETIME:
+        if (ntohs(attr->length) >= 4) {
+          memcpy(&msg->lifetime, attr->value, sizeof(uint32_t));
+          msg->lifetime = ntohl(msg->lifetime);
+        }
+        break;
+      case STUN_ATTR_TYPE_XOR_PEER_ADDRESS:
+      case STUN_ATTR_TYPE_DATA:
+        break;
+      case STUN_ATTR_TYPE_SOFTWARE:
         break;
       case STUN_ATTR_TYPE_REALM:
         memset(msg->realm, 0, sizeof(msg->realm));

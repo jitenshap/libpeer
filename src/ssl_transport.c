@@ -28,7 +28,7 @@ static int ssl_transport_mbedtls_recv_timeout(void* ctx, unsigned char* buf, siz
   if (ret < 0) {
     return -1;
   } else if (ret == 0) {
-    // timeout
+    return MBEDTLS_ERR_SSL_TIMEOUT;
   } else {
     if (FD_ISSET(((TcpSocket*)ctx)->fd, &read_fds)) {
       ret = tcp_socket_recv((TcpSocket*)ctx, buf, len);
@@ -95,7 +95,8 @@ int ssl_transport_connect(NetworkContext_t* net_ctx,
   tcp_socket_open(&net_ctx->tcp_socket, AF_INET);
   ports_resolve_addr(host, &resolved_addr);
   addr_set_port(&resolved_addr, port);
-  if ((ret = tcp_socket_connect(&net_ctx->tcp_socket, &resolved_addr) < 0)) {
+  ret = tcp_socket_connect(&net_ctx->tcp_socket, &resolved_addr);
+  if (ret < 0) {
     return -1;
   }
 
@@ -129,6 +130,10 @@ int32_t ssl_transport_recv(NetworkContext_t* net_ctx, void* buf, size_t len) {
   int ret;
   memset(buf, 0, len);
   ret = mbedtls_ssl_read(&net_ctx->ssl, buf, len);
+
+  if (ret == MBEDTLS_ERR_SSL_TIMEOUT || ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+    return 0;
+  }
 
   return ret;
 }

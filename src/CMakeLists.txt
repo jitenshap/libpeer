@@ -2,7 +2,7 @@ project(lib)
 
 file(GLOB SRCS "*.c")
 
-file(GLOB HEADERS "peer.h" "peer_connection.h" "peer_signaling.h")
+file(GLOB HEADERS "${CMAKE_CURRENT_LIST_DIR}/../include/*.h")
 
 add_library(peer
   ${SRCS}
@@ -22,8 +22,13 @@ target_link_libraries(peer ${DEP_LIBS})
 
 set_target_properties(peer PROPERTIES PUBLIC_HEADER "${HEADERS}")
 
+target_include_directories(peer PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}/../include
+  ${HTTP_INCLUDE_PUBLIC_DIRS}
+  ${MQTT_INCLUDE_PUBLIC_DIRS}
+)
+
 install(TARGETS peer
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
 )
-

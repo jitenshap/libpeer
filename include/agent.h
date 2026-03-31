@@ -9,7 +9,9 @@
 #include "base64.h"
 #include "ice.h"
 #include "socket.h"
+#include "ssl_transport.h"
 #include "stun.h"
+#include "turn.h"
 #include "utils.h"
 
 #ifndef AGENT_MAX_DESCRIPTION
@@ -55,11 +57,19 @@ struct Agent {
   int remote_candidates_count;
 
   UdpSocket udp_sockets[2];
+  TcpSocket turn_tcp_socket;
+  int turn_use_tcp;
+  int turn_use_tls;
+  NetworkContext_t turn_tls_ctx;
+  char turn_host[256];
 
   Address host_addr;
   int b_host_addr;
   uint64_t binding_request_time;
+  uint64_t last_activity_time;
   AgentState state;
+  uint32_t turn_tcp_recv_log_count;
+  uint32_t turn_data_indication_log_count;
 
   AgentMode mode;
 
@@ -70,6 +80,8 @@ struct Agent {
   int candidate_pairs_num;
   int use_candidate;
   uint32_t transaction_id[3];
+  TurnClient turn;
+  Address last_recv_addr;
 };
 
 void agent_gather_candidate(Agent* agent, const char* urls, const char* username, const char* credential);
@@ -95,5 +107,9 @@ int agent_create(Agent* agent);
 void agent_destroy(Agent* agent);
 
 void agent_update_candidate_pairs(Agent* agent);
+
+int agent_prepare_turn_peer(Agent* agent, const Address* peer_addr);
+
+int agent_maintain_turn(Agent* agent);
 
 #endif  // AGENT_H_

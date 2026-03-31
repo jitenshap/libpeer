@@ -14,6 +14,7 @@
 #include "ports.h"
 #include "socket.h"
 #include "utils.h"
+#include <mbedtls/error.h>
 
 int dtls_srtp_udp_send(void* ctx, const uint8_t* buf, size_t len) {
   DtlsSrtp* dtls_srtp = (DtlsSrtp*)ctx;
@@ -59,6 +60,50 @@ static void dtls_srtp_x509_digest(const mbedtls_x509_crt* crt, char* buf) {
 
   *(--buf) = '\0';
 }
+
+#if CONFIG_MBEDTLS_DEBUG
+static void dtls_srtp_debug(void* ctx, int level, const char* file, int line, const char* str) {
+  char msg[160];
+  size_t msg_len = 0;
+  const char* base = file;
+  int keep = 0;
+
+  (void)ctx;
+
+  if (file != NULL) {
+    const char* slash = strrchr(file, '/');
+    const char* backslash = strrchr(file, '\\');
+    if (slash != NULL || backslash != NULL) {
+      base = (slash != NULL && (backslash == NULL || slash > backslash)) ? slash + 1 : backslash + 1;
+    }
+  }
+
+  if (str != NULL) {
+    msg_len = strnlen(str, sizeof(msg) - 1);
+    while (msg_len > 0 && (str[msg_len - 1] == '\n' || str[msg_len - 1] == '\r')) {
+      msg_len--;
+    }
+    memcpy(msg, str, msg_len);
+  }
+  msg[msg_len] = '\0';
+
+  if (level <= 1) {
+    keep = 1;
+  } else if (strstr(msg, "handshake") != NULL ||
+             strstr(msg, "client state") != NULL ||
+             strstr(msg, "server state") != NULL ||
+             strstr(msg, "f_send returned") != NULL ||
+             strstr(msg, "f_recv(_timeout)() returned") != NULL) {
+    keep = 1;
+  }
+
+  if (!keep) {
+    return;
+  }
+
+  LOGI("DTLS mbedtls %s:%d %s", base != NULL ? base : "?", line, msg);
+}
+#endif
 
 // Do not verify CA
 static int dtls_srtp_cert_verify(void* data, mbedtls_x509_crt* crt, int depth, uint32_t* flags) {
@@ -139,12 +184,6 @@ static int dtls_srtp_selfsign_cert(DtlsSrtp* dtls_srtp) {
   return ret;
 }
 
-#if CONFIG_MBEDTLS_DEBUG
-static void dtls_srtp_debug(void* ctx, int level, const char* file, int line, const char* str) {
-  LOGD("%s:%04d: %s", file, line, str);
-}
-#endif
-
 int dtls_srtp_init(DtlsSrtp* dtls_srtp, DtlsSrtpRole role, void* user_data) {
   static const mbedtls_ssl_srtp_profile default_profiles[] = {
       MBEDTLS_TLS_SRTP_AES128_CM_HMAC_SHA1_80,
@@ -166,23 +205,7 @@ int dtls_srtp_init(DtlsSrtp* dtls_srtp, DtlsSrtpRole role, void* user_data) {
   mbedtls_pk_init(&dtls_srtp->pkey);
   mbedtls_entropy_init(&dtls_srtp->entropy);
   mbedtls_ctr_drbg_init(&dtls_srtp->ctr_drbg);
-#if CONFIG_MBEDTLS_DEBUG
-  mbedtls_debug_set_threshold(3);
-  mbedtls_ssl_conf_dbg(&dtls_srtp->conf, dtls_srtp_debug, NULL);
-#endif
   dtls_srtp_selfsign_cert(dtls_srtp);
-
-  mbedtls_ssl_conf_verify(&dtls_srtp->conf, dtls_srtp_cert_verify, NULL);
-
-  mbedtls_ssl_conf_authmode(&dtls_srtp->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
-
-  mbedtls_ssl_conf_ca_chain(&dtls_srtp->conf, &dtls_srtp->cert, NULL);
-
-  mbedtls_ssl_conf_own_cert(&dtls_srtp->conf, &dtls_srtp->cert, &dtls_srtp->pkey);
-
-  mbedtls_ssl_conf_rng(&dtls_srtp->conf, mbedtls_ctr_drbg_random, &dtls_srtp->ctr_drbg);
-
-  mbedtls_ssl_conf_read_timeout(&dtls_srtp->conf, 1000);
 
   if (dtls_srtp->role == DTLS_SRTP_ROLE_SERVER) {
     mbedtls_ssl_config_defaults(&dtls_srtp->conf,
@@ -202,6 +225,19 @@ int dtls_srtp_init(DtlsSrtp* dtls_srtp, DtlsSrtpRole role, void* user_data) {
                                 MBEDTLS_SSL_TRANSPORT_DATAGRAM,
                                 MBEDTLS_SSL_PRESET_DEFAULT);
   }
+
+#if CONFIG_MBEDTLS_DEBUG
+  mbedtls_ssl_conf_dbg(&dtls_srtp->conf, dtls_srtp_debug, NULL);
+  mbedtls_debug_set_threshold(CONFIG_MBEDTLS_DEBUG_LEVEL);
+  LOGI("DTLS mbedTLS debug enabled threshold=%d", CONFIG_MBEDTLS_DEBUG_LEVEL);
+#endif
+
+  mbedtls_ssl_conf_verify(&dtls_srtp->conf, dtls_srtp_cert_verify, NULL);
+  mbedtls_ssl_conf_authmode(&dtls_srtp->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+  mbedtls_ssl_conf_ca_chain(&dtls_srtp->conf, &dtls_srtp->cert, NULL);
+  mbedtls_ssl_conf_own_cert(&dtls_srtp->conf, &dtls_srtp->cert, &dtls_srtp->pkey);
+  mbedtls_ssl_conf_rng(&dtls_srtp->conf, mbedtls_ctr_drbg_random, &dtls_srtp->ctr_drbg);
+  mbedtls_ssl_conf_read_timeout(&dtls_srtp->conf, 1000);
 
   dtls_srtp_x509_digest(&dtls_srtp->cert, dtls_srtp->local_fingerprint);
 
@@ -370,6 +406,21 @@ static int dtls_srtp_do_handshake(DtlsSrtp* dtls_srtp) {
   int ret;
 
   static mbedtls_timing_delay_context timer;
+  char remote_addr[ADDRSTRLEN];
+  const char* remote_addr_str = "none";
+  int remote_port = 0;
+
+  if (dtls_srtp->remote_addr != NULL) {
+    addr_to_string(dtls_srtp->remote_addr, remote_addr, sizeof(remote_addr));
+    remote_addr_str = remote_addr;
+    remote_port = dtls_srtp->remote_addr->port;
+  }
+
+  LOGD("DTLS handshake step enter role=%s state=%d remote=%s:%d",
+       dtls_srtp->role == DTLS_SRTP_ROLE_SERVER ? "server" : "client",
+       dtls_srtp->state,
+       remote_addr_str,
+       remote_port);
 
   mbedtls_ssl_set_timer_cb(&dtls_srtp->ssl, &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
 
@@ -381,37 +432,77 @@ static int dtls_srtp_do_handshake(DtlsSrtp* dtls_srtp) {
 
   mbedtls_ssl_set_bio(&dtls_srtp->ssl, dtls_srtp, dtls_srtp->udp_send, dtls_srtp->udp_recv, NULL);
 
-  do {
-    ret = mbedtls_ssl_handshake(&dtls_srtp->ssl);
-
-  } while (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE);
-
+  ret = mbedtls_ssl_handshake(&dtls_srtp->ssl);
+  LOGI("DTLS handshake step role=%s ret=%d",
+       dtls_srtp->role == DTLS_SRTP_ROLE_SERVER ? "server" : "client",
+       ret);
   return ret;
+}
+
+static int dtls_srtp_set_transport_id(DtlsSrtp* dtls_srtp, const Address* addr) {
+  unsigned char transport_id[1 + sizeof(uint16_t) + sizeof(struct in6_addr)];
+  size_t transport_id_len = 0;
+  uint16_t port_be = 0;
+
+  if (addr == NULL) {
+    return -1;
+  }
+
+  memset(transport_id, 0, sizeof(transport_id));
+  transport_id[transport_id_len++] = addr->family;
+  port_be = htons(addr->port);
+  memcpy(transport_id + transport_id_len, &port_be, sizeof(port_be));
+  transport_id_len += sizeof(port_be);
+
+  if (addr->family == AF_INET6) {
+    memcpy(transport_id + transport_id_len, &addr->sin6.sin6_addr, sizeof(addr->sin6.sin6_addr));
+    transport_id_len += sizeof(addr->sin6.sin6_addr);
+  } else {
+    memcpy(transport_id + transport_id_len, &addr->sin.sin_addr, sizeof(addr->sin.sin_addr));
+    transport_id_len += sizeof(addr->sin.sin_addr);
+  }
+
+  return mbedtls_ssl_set_client_transport_id(&dtls_srtp->ssl, transport_id, transport_id_len);
 }
 
 static int dtls_srtp_handshake_server(DtlsSrtp* dtls_srtp) {
   int ret;
 
-  while (1) {
-    unsigned char client_ip[] = "test";
-
+  if (dtls_srtp->state == DTLS_SRTP_STATE_INIT) {
     mbedtls_ssl_session_reset(&dtls_srtp->ssl);
-
-    mbedtls_ssl_set_client_transport_id(&dtls_srtp->ssl, client_ip, sizeof(client_ip));
-
-    ret = dtls_srtp_do_handshake(dtls_srtp);
-
-    if (ret == MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED) {
-      LOGD("DTLS hello verification requested");
-
-    } else if (ret != 0) {
-      LOGE("failed! mbedtls_ssl_handshake returned -0x%.4x", (unsigned int)-ret);
-
-      break;
-
-    } else {
-      break;
+    if (dtls_srtp_set_transport_id(dtls_srtp, &dtls_srtp->transport_addr) != 0) {
+      LOGE("failed to set DTLS client transport id");
+      return -1;
     }
+    dtls_srtp->state = DTLS_SRTP_STATE_HANDSHAKE;
+  }
+
+  ret = dtls_srtp_do_handshake(dtls_srtp);
+
+  if (ret == MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED) {
+    LOGI("DTLS hello verification requested");
+    mbedtls_ssl_session_reset(&dtls_srtp->ssl);
+    if (dtls_srtp_set_transport_id(dtls_srtp, &dtls_srtp->transport_addr) != 0) {
+      LOGE("failed to reset DTLS client transport id");
+      return -1;
+    }
+    dtls_srtp->state = DTLS_SRTP_STATE_HANDSHAKE;
+    return MBEDTLS_ERR_SSL_WANT_READ;
+  }
+
+  if (ret != 0 && ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+    char errbuf[128];
+    memset(errbuf, 0, sizeof(errbuf));
+    mbedtls_strerror(ret, errbuf, sizeof(errbuf));
+    LOGE("DTLS server handshake error -0x%.4x (%s)", (unsigned int)-ret, errbuf);
+    LOGE("failed! mbedtls_ssl_handshake returned -0x%.4x", (unsigned int)-ret);
+  }
+
+  if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+    LOGD("DTLS handshake pending role=%s ret=%d",
+         dtls_srtp->role == DTLS_SRTP_ROLE_SERVER ? "server" : "client",
+         ret);
+    return ret;
   }
 
   LOGD("DTLS server handshake done");
@@ -423,8 +514,19 @@ static int dtls_srtp_handshake_client(DtlsSrtp* dtls_srtp) {
   int ret;
 
   ret = dtls_srtp_do_handshake(dtls_srtp);
-  if (ret != 0) {
+  if (ret != 0 && ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+    char errbuf[128];
+    memset(errbuf, 0, sizeof(errbuf));
+    mbedtls_strerror(ret, errbuf, sizeof(errbuf));
+    LOGE("DTLS client handshake error -0x%.4x (%s)", (unsigned int)-ret, errbuf);
     LOGE("failed! mbedtls_ssl_handshake returned -0x%.4x\n\n", (unsigned int)-ret);
+  }
+
+  if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+    LOGD("DTLS handshake pending role=%s ret=%d",
+         dtls_srtp->role == DTLS_SRTP_ROLE_SERVER ? "server" : "client",
+         ret);
+    return ret;
   }
 
   LOGD("DTLS client handshake done");
@@ -435,6 +537,13 @@ static int dtls_srtp_handshake_client(DtlsSrtp* dtls_srtp) {
 int dtls_srtp_handshake(DtlsSrtp* dtls_srtp, Address* addr) {
   int ret;
   dtls_srtp->remote_addr = addr;
+  if (addr != NULL) {
+    memcpy(&dtls_srtp->transport_addr, addr, sizeof(dtls_srtp->transport_addr));
+  }
+
+  LOGI("DTLS handshake begin role=%s expected_fingerprint=%s",
+       dtls_srtp->role == DTLS_SRTP_ROLE_SERVER ? "server" : "client",
+       dtls_srtp->remote_fingerprint);
 
   if (dtls_srtp->role == DTLS_SRTP_ROLE_SERVER) {
     ret = dtls_srtp_handshake_server(dtls_srtp);
@@ -442,9 +551,22 @@ int dtls_srtp_handshake(DtlsSrtp* dtls_srtp, Address* addr) {
     ret = dtls_srtp_handshake_client(dtls_srtp);
   }
 
+  if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+    return ret;
+  }
+  if (ret != 0) {
+    if (dtls_srtp->role == DTLS_SRTP_ROLE_SERVER && dtls_srtp->state == DTLS_SRTP_STATE_HANDSHAKE) {
+      LOGI("DTLS server handshake retry after ret=-0x%.4x", (unsigned int)-ret);
+      return MBEDTLS_ERR_SSL_WANT_READ;
+    }
+    dtls_srtp->state = DTLS_SRTP_STATE_INIT;
+    return ret;
+  }
+
   const mbedtls_x509_crt* remote_crt;
   if ((remote_crt = mbedtls_ssl_get_peer_cert(&dtls_srtp->ssl)) != NULL) {
     dtls_srtp_x509_digest(remote_crt, dtls_srtp->actual_remote_fingerprint);
+    LOGI("DTLS peer certificate received actual_fingerprint=%s", dtls_srtp->actual_remote_fingerprint);
 
     if (strncmp(dtls_srtp->remote_fingerprint, dtls_srtp->actual_remote_fingerprint, DTLS_SRTP_FINGERPRINT_LENGTH) != 0) {
       LOGE("Actual and Expected Fingerprint mismatch: %s %s",
@@ -454,7 +576,7 @@ int dtls_srtp_handshake(DtlsSrtp* dtls_srtp, Address* addr) {
     }
 
   } else {
-    LOGE("no remote fingerprint");
+    LOGE("no remote fingerprint expected=%s", dtls_srtp->remote_fingerprint);
     return -1;
   }
 

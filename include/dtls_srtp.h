@@ -59,6 +59,7 @@ typedef struct DtlsSrtp {
   int (*udp_recv)(void* ctx, unsigned char* buf, size_t len);
 
   Address* remote_addr;
+  Address transport_addr;
 
   DtlsSrtpRole role;
   DtlsSrtpState state;
