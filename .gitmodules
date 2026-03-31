@@ -16,3 +16,6 @@
 [submodule "third_party/coreMQTT"]
 	path = third_party/coreMQTT
 	url = https://github.com/FreeRTOS/coreMQTT
+[submodule "examples/esp32_i2smic2browser/components/srtp"]
+	path = examples/esp32_i2smic2browser/components/srtp
+	url = git@github.com:jitenshap/libsrtp_esp_ports.git

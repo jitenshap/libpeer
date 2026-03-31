@@ -1,0 +1,224 @@
+ *  Executing task in folder esp32_i2smic2browser: C:\Users\admin\.espressif\tools\ninja\1.12.1\ninja.EXE  
+
+[3/235] Building C object esp-idf/srtp...ir/libsrtp/crypto/cipher/aes_icm.c.ob 
+FAILED: esp-idf/srtp/CMakeFiles/__idf_srtp.dir/libsrtp/crypto/cipher/aes_icm.c.obj 
+C:\Users\admin\.espressif\tools\xtensa-esp-elf\esp-14.2.0_20241119\xtensa-esp-elf\bin\xtensa-esp32s3-elf-gcc.exe -DESP_PLATFORM -DHAVE_CONFIG_H -DIDF_VER=\"v5.5.1-dirty\" -DSOC_MMU_PAGE_SIZE=CONFIG_MMU_PAGE_SIZE -DSOC_XTAL_FREQ_MHZ=CONFIG_XTAL_FREQ -D_GLIBCXX_HAVE_POSIX_SEMAPHORE -D_GLIBCXX_USE_POSIX_SEMAPHORE -D_GNU_SOURCE -D_POSIX_READER_WRITER_LOCKS -IC:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/build/config -IC:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/esp-port -IC:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/include -IC:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/newlib/platform_include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/freertos/config/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/freertos/config/include/freertos -IC:/Users/admin/esp/v5.5.1/esp-idf/components/freertos/config/xtensa/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/freertos/FreeRTOS-Kernel/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos -IC:/Users/admin/esp/v5.5.1/esp-idf/components/freertos/esp_additions/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/include/soc -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/include/soc/esp32s3 -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/dma/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/ldo/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/debug_probe/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/mspi_timing_tuning/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/mspi_timing_tuning/tuning_scheme_impl/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/power_supply/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/port/esp32s3/. -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/port/esp32s3/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/mspi_timing_tuning/port/esp32s3/. -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_hw_support/mspi_timing_tuning/port/esp32s3/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/heap/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/heap/tlsf -IC:/Users/admin/esp/v5.5.1/esp-idf/components/log/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/soc/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/soc/esp32s3 -IC:/Users/admin/esp/v5.5.1/esp-idf/components/soc/esp32s3/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/soc/esp32s3/register -IC:/Users/admin/esp/v5.5.1/esp-idf/components/hal/platform_port/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/hal/esp32s3/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/hal/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_rom/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/include/esp32s3 -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3 -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_common/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_system/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_system/port/soc -IC:/Users/admin/esp/v5.5.1/esp-idf/components/esp_system/port/include/private -IC:/Users/admin/esp/v5.5.1/esp-idf/components/xtensa/esp32s3/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/xtensa/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/xtensa/deprecated_include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/include/apps -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/include/apps/sntp -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/lwip/src/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/port/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/port/freertos/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/port/esp32xx/include -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/port/esp32xx/include/arch -IC:/Users/admin/esp/v5.5.1/esp-idf/components/lwip/port/esp32xx/include/sys -mlongcalls  -fno-builtin-memcpy -fno-builtin-memset -fno-builtin-bzero -fno-builtin-stpcpy -fno-builtin-strncpy -fdiagnostics-color=always -ffunction-sections -fdata-sections -Wall -Werror=all -Wno-error=unused-function -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=deprecated-declarations -Wextra -Wno-error=extra -Wno-unused-parameter -Wno-sign-compare -Wno-enum-conversion -gdwarf-4 -ggdb -mdisable-hardware-atomics -Og -fno-shrink-wrap -fmacro-prefix-map=C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser=. -fmacro-prefix-map=C:/Users/admin/esp/v5.5.1/esp-idf=/IDF -fstrict-volatile-bitfields -fno-jump-tables -fno-tree-switch-conversion -std=gnu17 -Wno-old-style-declaration -MD -MT esp-idf/srtp/CMakeFiles/__idf_srtp.dir/libsrtp/crypto/cipher/aes_icm.c.obj -MF esp-idf\srtp\CMakeFiles\__idf_srtp.dir\libsrtp\crypto\cipher\aes_icm.c.obj.d -o esp-idf/srtp/CMakeFiles/__idf_srtp.dir/libsrtp/crypto/cipher/aes_icm.c.obj -c C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c:416:5: error: initialization of 'srtp_err_status_t (*)(void *, uint8_t *, uint32_t *)' {aka 'srtp_err_status_t (*)(void *, unsigned char *, long unsigned int *)'} from incompatible pointer type 'srtp_err_status_t (*)(void *, unsigned char *, unsigned int *)' [-Wincompatible-pointer-types]
+  416 |     srtp_aes_icm_encrypt,          /* */
+      |     ^~~~~~~~~~~~~~~~~~~~
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c:416:5: note: (near initialization for 'srtp_aes_icm_128.encrypt')
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c:417:5: error: initialization of 'srtp_err_status_t (*)(void *, uint8_t *, uint32_t *)' {aka 'srtp_err_status_t (*)(void *, unsigned char *, long unsigned int *)'} from incompatible pointer type 'srtp_err_status_t (*)(void *, unsigned char *, unsigned int *)' [-Wincompatible-pointer-types]
+  417 |     srtp_aes_icm_encrypt,          /* */
+      |     ^~~~~~~~~~~~~~~~~~~~
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c:417:5: note: (near initialization for 'srtp_aes_icm_128.decrypt')
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c:430:5: error: initialization of 'srtp_err_status_t (*)(void *, uint8_t *, uint32_t *)' {aka 'srtp_err_status_t (*)(void *, unsigned char *, long unsigned int *)'} from incompatible pointer type 'srtp_err_status_t (*)(void *, unsigned char *, unsigned int *)' [-Wincompatible-pointer-types]
+  430 |     srtp_aes_icm_encrypt,          /* */
+      |     ^~~~~~~~~~~~~~~~~~~~
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c:430:5: note: (near initialization for 'srtp_aes_icm_256.encrypt')
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c:431:5: error: initialization of 'srtp_err_status_t (*)(void *, uint8_t *, uint32_t *)' {aka 'srtp_err_status_t (*)(void *, unsigned char *, long unsigned int *)'} from incompatible pointer type 'srtp_err_status_t (*)(void *, unsigned char *, unsigned int *)' [-Wincompatible-pointer-types]
+  431 |     srtp_aes_icm_encrypt,          /* */
+      |     ^~~~~~~~~~~~~~~~~~~~
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/components/srtp/libsrtp/crypto/cipher/aes_icm.c:431:5: note: (near initialization for 'srtp_aes_icm_256.decrypt')
+[16/235] Building C object esp-idf/sep....dir/usrsctplib/user_environment.c.ob 
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/managed_components/sepfy__usrsctp/usrsctplib/user_environment.c: In function 'read_random':      
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/managed_components/sepfy__usrsctp/usrsctplib/user_environment.c:292:17: warning: unused variable 'n' [-Wunused-variable]
+  292 |         ssize_t n;
+      |                 ^
+[26/235] Building C object esp-idf/sep...r/usrsctplib/netinet/sctp_usrreq.c.ob 
+ninja: build stopped: subcommand failed.
+
+ *  The terminal process "C:\Users\admin\.espressif\tools\ninja\1.12.1\ninja.EXE" terminated with exit code: 1. 
+
+ *  Executing task in folder esp32_i2smic2browser: C:\Users\admin\.espressif\tools\ninja\1.12.1\ninja.EXE  
+
+[74/210] Building C object esp-idf/lib...Files/__idf_libpeer.dir/src/sctp.c.ob 
+C:/Users/admin/Desktop/libpeer/src/sctp.c:498:12: warning: 'sctp_handle_incoming_data' defined but not used [-Wunused-function]
+  498 | static int sctp_handle_incoming_data(Sctp* sctp, char* data, size_t len, uint32_t ppid, uint16_t sid, int flags) {
+      |            ^~~~~~~~~~~~~~~~~~~~~~~~~
+[79/210] Building C object esp-idf/lib.../__idf_libpeer.dir/src/dtls_srtp.c.ob 
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c: In function 'dtls_srtp_key_derivation':
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:315:15: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]       
+  315 |     local_key = server_key;
+      |               ^
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:316:16: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]       
+  316 |     local_salt = server_salt;
+      |                ^
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:317:16: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]       
+  317 |     remote_key = client_key;
+      |                ^
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:318:17: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]       
+  318 |     remote_salt = client_salt;
+      |                 ^
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:320:15: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]       
+  320 |     local_key = client_key;
+      |               ^
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:321:16: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]       
+  321 |     local_salt = client_salt;
+      |                ^
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:322:16: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]       
+  322 |     remote_key = server_key;
+      |                ^
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:323:17: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]       
+  323 |     remote_salt = server_salt;
+      |                 ^
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c: In function 'dtls_srtp_do_handshake':
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:411:7: warning: variable 'remote_port' set but not used [-Wunused-but-set-variable]
+  411 |   int remote_port = 0;
+      |       ^~~~~~~~~~~
+C:/Users/admin/Desktop/libpeer/src/dtls_srtp.c:410:15: warning: variable 'remote_addr_str' set but not used [-Wunused-but-set-variable]
+  410 |   const char* remote_addr_str = "none";
+      |               ^~~~~~~~~~~~~~~
+[83/210] Building C object esp-idf/lib..._libpeer.dir/src/peer_connection.c.ob 
+C:/Users/admin/Desktop/libpeer/src/peer_connection.c: In function 'peer_connection_set_remote_description':
+C:/Users/admin/Desktop/libpeer/src/peer_connection.c:610:16: warning: variable 'role' set but not used [-Wunused-but-set-variable]
+  610 |   DtlsSrtpRole role = DTLS_SRTP_ROLE_SERVER;
+      |                ^~~~
+[201/210] Building C object esp-idf/ma...akeFiles/__idf_main.dir/app_main.c.ob 
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/main/app_main.c: In function 'app_log_connection_snapshot':
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/main/app_main.c:112:5: warning: switch condition has boolean value [-Wswitch-bool]
+  112 |     switch (esp_websocket_client_is_connected(ws_client)) {
+      |     ^~~~~~
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/main/app_main.c: At top level:
+C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/main/app_main.c:193:12: warning: 'app_log_offer' defined but not used [-Wunused-function]        
+  193 | static int app_log_offer(PeerConnection* pc) {
+      |            ^~~~~~~~~~~~~
+[203/210] Performing build step for 'bootloader'
+[1/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/util.c.obj  
+[2/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/noos/util.c.obj
+[3/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/noos/log_lock.c.obj
+[4/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/noos/log_timestamp.c.obj
+[5/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_systimer.c.obj
+[6/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/log_print.c.obj
+[7/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_sys.c.obj
+[8/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_crc.c.obj
+[9/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/log_timestamp_common.c.obj
+[10/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_uart.c.obj
+[11/123] Building ASM object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_cache_writeback_esp32s3.S.obj
+[12/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/log_format_text.c.obj
+[13/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_wdt.c.obj
+[14/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/buffer/log_buffers.c.obj
+[15/123] Building ASM object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_longjmp.S.obj
+[16/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_spiflash.c.obj
+[17/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_efuse.c.obj
+[18/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_cache_esp32s2_esp32s3.c.obj
+[19/123] Building C object esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/src/esp_err_to_name.c.obj
+[20/123] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/src/log.c.obj  
+[21/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_print.c.obj
+[22/123] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_gpio.c.obj
+[23/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32s3/esp_cpu_intr.c.obj
+[24/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/cpu.c.obj
+[25/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32s3/chip_info.c.obj
+[26/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32s3/rtc_sleep.c.obj
+[27/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/esp_memory_utils.c.obj
+[28/123] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/esp32s3/esp_efuse_table.c.obj
+[29/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32s3/rtc_clk_init.c.obj
+[30/123] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/esp32s3/esp_efuse_fields.c.obj
+[31/123] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/esp32s3/esp_efuse_rtc_calib.c.obj
+[32/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32s3/cpu_region_protect.c.obj
+[33/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_mem.c.obj
+[34/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32s3/rtc_init.c.obj
+[35/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32s3/rtc_time.c.obj
+[36/123] Linking C static library esp-idf\log\liblog.a
+[37/123] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/src/esp_efuse_api.c.obj
+[38/123] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32s3/rtc_clk.c.obj
+[39/123] Building C object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/esp_err.c.obj
+[40/123] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/esp32s3/esp_efuse_utility.c.obj
+[41/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_random.c.obj
+[42/123] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/src/esp_efuse_fields.c.obj
+[43/123] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/src/esp_efuse_utility.c.obj
+[44/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_efuse.c.obj
+[45/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/secure_boot.c.obj
+[46/123] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/src/efuse_controller/keys/with_key_purposes/esp_efuse_api_key.c.obj
+[47/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/flash_encrypt.c.obj
+[48/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_clock_init.c.obj
+[49/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_common_loader.c.obj
+[50/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_common.c.obj
+[51/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_random_esp32s3.c.obj
+[52/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_sha.c.obj
+[53/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_clock_loader.c.obj
+[54/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/bootloader_flash/src/flash_qio_mode.c.obj
+[55/123] Building C object esp-idf/esp_bootloader_format/CMakeFiles/__idf_esp_bootloader_format.dir/esp_bootloader_desc.c.obj
+[56/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/esp32s3/bootloader_soc.c.obj
+[57/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_panic.c.obj
+[58/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/flash_partitions.c.obj
+[59/123] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/mpu_hal.c.obj  
+[60/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_console.c.obj
+[61/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_console_loader.c.obj
+[62/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/bootloader_flash/src/bootloader_flash.c.obj
+[63/123] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/hal_utils.c.obj
+[64/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/bootloader_flash/src/bootloader_flash_config_esp32s3.c.obj      
+[65/123] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/efuse_hal.c.obj
+[66/123] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/esp32s3/efuse_hal.c.obj
+[67/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/gpio_periph.c.obj
+[68/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_init.c.obj
+[69/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/interrupts.c.obj
+[70/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/dedic_gpio_periph.c.obj
+[71/123] Linking C static library esp-idf\esp_rom\libesp_rom.a
+[72/123] Building C object esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/spi_flash_wrap.c.obj
+[73/123] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/cache_hal.c.obj
+[74/123] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/mmu_hal.c.obj  
+[75/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/dport_access_common.c.obj
+[76/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/uart_periph.c.obj
+[77/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/spi_periph.c.obj
+[78/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/gdma_periph.c.obj
+[79/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/esp32s3/bootloader_esp32s3.c.obj
+[80/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/adc_periph.c.obj
+[81/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_utility.c.obj
+[82/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/lldesc.c.obj   
+[83/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/i2c_periph.c.obj
+[84/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/ledc_periph.c.obj
+[85/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/pcnt_periph.c.obj
+[86/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/mpi_periph.c.obj
+[87/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/sdm_periph.c.obj
+[88/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/i2s_periph.c.obj
+[89/123] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/esp_image_format.c.obj
+[90/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/lcd_periph.c.obj
+[91/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/twai_periph.c.obj
+[92/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/power_supply_periph.c.obj
+[93/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/touch_sensor_periph.c.obj
+[94/123] Linking C static library esp-idf\esp_common\libesp_common.a
+[95/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/timer_periph.c.obj
+[96/123] Generating project_elf_src_esp32s3.c
+[97/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/sdmmc_periph.c.obj
+[98/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/wdt_periph.c.obj
+[99/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/rmt_periph.c.obj
+[100/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/temperature_sensor_periph.c.obj
+[101/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/usb_dwc_periph.c.obj
+[102/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/cam_periph.c.obj
+[103/123] Building C object esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/eri.c.obj
+[104/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/rtc_io_periph.c.obj
+[105/123] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32s3/mcpwm_periph.c.obj
+[106/123] Building C object esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/xt_trax.c.obj
+[107/123] Building C object CMakeFiles/bootloader.elf.dir/project_elf_src_esp32s3.c.obj
+[108/123] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/bootloader_start.c.obj
+[109/123] Linking C static library esp-idf\esp_hw_support\libesp_hw_support.a  
+[110/123] Linking C static library esp-idf\esp_system\libesp_system.a
+[111/123] Linking C static library esp-idf\efuse\libefuse.a
+[112/123] Linking C static library esp-idf\bootloader_support\libbootloader_support.a
+[113/123] Building C object esp-idf/micro-ecc/CMakeFiles/__idf_micro-ecc.dir/uECC_verify_antifault.c.obj
+[114/123] Linking C static library esp-idf\esp_bootloader_format\libesp_bootloader_format.a
+[115/123] Linking C static library esp-idf\spi_flash\libspi_flash.a
+[116/123] Linking C static library esp-idf\hal\libhal.a
+[117/123] Linking C static library esp-idf\micro-ecc\libmicro-ecc.a
+[118/123] Linking C static library esp-idf\soc\libsoc.a
+[119/123] Linking C static library esp-idf\xtensa\libxtensa.a
+[120/123] Linking C static library esp-idf\main\libmain.a
+[121/123] Linking C executable bootloader.elf
+[122/123] Generating binary image from built executable
+esptool.py v4.10.0
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+Generated C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/build/bootloader/bootloader.bin
+[123/123] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\admin\Desktop\libpeer\examples\esp32_i2smic2browser\build\bootloader\esp-idf\esptool_py && C:\Users\admin\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:/Users/admin/esp/v5.5.1/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/build/bootloader/bootloader.bin"
+Bootloader binary size 0x5240 bytes. 0x2dc0 bytes (36%) free.
+[208/210] Linking CXX executable esp32-peer.elf                                
+FAILED: esp32-peer.elf
+C:\WINDOWS\system32\cmd.exe /C "cd . && C:\Users\admin\.espressif\tools\xtensa-esp-elf\esp-14.2.0_20241119\xtensa-esp-elf\bin\xtensa-esp32s3-elf-g++.exe -mlongcalls  -fno-builtin-memcpy -fno-builtin-memset -fno-builtin-bzero -fno-builtin-stpcpy -fno-builtin-strncpy -nostartfiles    -Wl,--cref -Wl,--defsym=IDF_TARGET_ESP32S3=0 -Wl,--Map=C:/Users/admin/Desktop/libpeer/examples/esp32_i2smic2browser/build/esp32-peer.map -Wl,--no-warn-rwx-segments -Wl,--orphan-handling=warn -fno-rtti -fno-lto -Wl,--gc-sections -Wl,--warn-common -T esp32s3.peripherals.ld -T esp32s3.rom.ld -T esp32s3.rom.api.ld -T esp32s3.rom.bt_funcs.ld -T esp32s3.rom.libgcc.ld -T esp32s3.rom.wdt.ld -T esp32s3.rom.version.ld -T esp32s3.rom.ble_master.ld -T esp32s3.rom.ble_50.ld -T esp32s3.rom.ble_smp.ld -T esp32s3.rom.ble_dtm.ld -T esp32s3.rom.ble_test.ld -T esp32s3.rom.ble_scan.ld -T esp32s3.rom.libc.ld -T esp32s3.rom.newlib.ld -T memory.ld -T sections.ld @CMakeFiles\esp32-peer.elf.rsp -o esp32-peer.elf && cd ."
+C:/Users/admin/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld.exe: esp-idf/srtp/libsrtp.a(aes_icm.c.obj):(.rodata.srtp_aes_icm_256+0x24): undefined reference to `srtp_aes_icm_256_test_case_0'
+C:/Users/admin/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld.exe: esp-idf/srtp/libsrtp.a(aes_icm.c.obj):(.rodata.srtp_aes_icm_128+0x24): undefined reference to `srtp_aes_icm_128_test_case_0'
+C:/Users/admin/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld.exe: esp-idf/srtp/libsrtp.a(hmac.c.obj):(.rodata.srtp_hmac+0x1c): undefined reference to `srtp_hmac_test_case_0'
+collect2.exe: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
+
+ *  The terminal process "C:\Users\admin\.espressif\tools\ninja\1.12.1\ninja.EXE" terminated with exit code: 1. 
