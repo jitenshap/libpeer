@@ -10,7 +10,7 @@
 #include "esp_audio_enc_reg.h"
 #include "esp_g711_enc.h"
 #include "esp_opus_enc.h"
-
+#include "string.h"
 #include "peer.h"
 
 #ifndef CONFIG_AUDIO_PDM_CLK_GPIO
